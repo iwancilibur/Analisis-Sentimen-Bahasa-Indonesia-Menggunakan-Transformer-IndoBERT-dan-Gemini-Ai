@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisis Sentimen Indonesia</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #3498db;
+            --positive: #2ecc71;
+            --neutral: #f39c12;
+            --negative: #e74c3c;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+            --gray: #95a5a6;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        header {
+            padding: 25px;
+            background: linear-gradient(135deg, var(--primary), #2980b9);
+            color: white;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+
+        header .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .input-group {
+            padding: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            resize: vertical;
+            transition: all 0.3s;
+        }
+
+        textarea:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .error-message {
+            background-color: #fadbd8;
+            color: var(--negative);
+            padding: 15px;
+            margin: 0 20px 20px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .results {
+            padding: 0 20px 20px;
+            display: none;
+        }
+
+        .sentiment-card {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            background-color: var(--light);
+        }
+
+        .sentiment-card.positif {
+            border-left: 5px solid var(--positive);
+        }
+
+        .sentiment-card.netral {
+            border-left: 5px solid var(--neutral);
+        }
+
+        .sentiment-card.negatif {
+            border-left: 5px solid var(--negative);
+        }
+
+        .sentiment-icon {
+            font-size: 2.5rem;
+            margin-right: 20px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: white;
+        }
+
+        .sentiment-card.positif .sentiment-icon {
+            color: var(--positive);
+        }
+
+        .sentiment-card.netral .sentiment-icon {
+            color: var(--neutral);
+        }
+
+        .sentiment-card.negatif .sentiment-icon {
+            color: var(--negative);
+        }
+
+        .sentiment-info {
+            flex: 1;
+        }
+
+        .sentiment-info h2 {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+
+        .sentiment-label {
+            font-size: 1.4rem;
+            font-weight: bold;
+            display: block;
+        }
+
+        .confidence {
+            font-size: 1rem;
+            font-weight: normal;
+            color: var(--gray);
+        }
+
+        .processing-time {
+            font-size: 0.9rem;
+            color: var(--gray);
+            font-style: italic;
+        }
+
+        .ai-analysis {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .ai-analysis h3 {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ai-response {
+            line-height: 1.7;
+        }
+
+        .ai-section {
+            margin-bottom: 10px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .secondary-btn {
+            background-color: white;
+            color: var(--dark);
+            border: 1px solid #ddd;
+            flex: 1;
+        }
+
+        .secondary-btn:hover {
+            background-color: #f1f1f1;
+        }
+
+        .tech-info {
+            padding: 20px;
+            background-color: #f0f7ff;
+            border-top: 1px solid #ddd;
+        }
+
+        .tech-info h3 {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tech-info ul {
+            padding-left: 20px;
+        }
+
+        .tech-info li {
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                border-radius: 0;
+            }
+            
+            .sentiment-card {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .sentiment-icon {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
+        }
+
+        .confidence-meter {
+            height: 20px;
+            background: #eee;
+            border-radius: 10px;
+            margin: 15px 0;
+            position: relative;
+        }
+
+        .meter-bar {
+            height: 100%;
+            border-radius: 10px;
+            background: linear-gradient(to right, #e74c3c, #f39c12, #2ecc71);
+        }
+
+        .meter-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        .loading {
+            display: inline-block;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-robot"></i> Analisis Sentimen AI</h1>
+            <p class="subtitle">Analisis sentimen teks Bahasa Indonesia dengan teknologi AI</p>
+        </header>
+
+        <main>
+            <form id="analysis-form">
+                <div class="input-group">
+                    <textarea id="text-input" placeholder="Masukkan teks dalam Bahasa Indonesia..."></textarea>
+                    <button type="submit" id="analyze-btn">
+                        <i class="fas fa-search"></i> Analisis Sentimen
+                    </button>
+                </div>
+            </form>
+
+            <div id="error-message" class="error-message" style="display: none;">
+                <i class="fas fa-exclamation-circle"></i> <span id="error-text"></span>
+            </div>
+
+            <section class="results" id="results">
+                <div class="sentiment-card" id="sentiment-card">
+                    <div class="sentiment-icon" id="sentiment-icon">
+                        <i class="fas fa-meh"></i>
+                    </div>
+                    <div class="sentiment-info">
+                        <h2>Hasil Analisis</h2>
+                        <p class="sentiment-label"><span id="sentiment-text"></span> <span class="confidence" id="confidence-text"></span></p>
+                        <p class="processing-time">Diproses dalam <span id="processing-time">0</span> detik</p>
+                    </div>
+                </div>
+
+                <div class="confidence-meter">
+                    <div class="meter-bar" id="meter-bar" style="width: 0%;"></div>
+                    <div class="meter-labels">
+                        <span>0%</span>
+                        <span>50%</span>
+                        <span>100%</span>
+                    </div>
+                </div>
+                
+                <div class="ai-analysis">
+                    <h3><i class="fas fa-lightbulb"></i> Penjelasan AI</h3>
+                    <div class="ai-response" id="ai-response-text"></div>
+                </div>
+
+                <div class="actions">
+                    <button id="copy-btn" class="secondary-btn">
+                        <i class="fas fa-copy"></i> Salin Hasil
+                    </button>
+                    <button id="new-analysis-btn" class="secondary-btn">
+                        <i class="fas fa-sync-alt"></i> Analisis Baru
+                    </button>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <div class="tech-info">
+                <h3><i class="fas fa-microchip"></i> Teknologi yang Digunakan</h3>
+                <ul>
+                    <li><strong>Model Analisis Sentimen (IndoBERT)</strong> - Model analisis sentimen khusus Bahasa Indonesia</li>
+                    <li><strong>AI Generatif</strong> - Penjelasan kontekstual dengan Gemini ai</li>
+                    <li><strong>Flask</strong> - Framework backend Python untuk Web</li>
+                    <li><strong>JavaScript</strong> - Pemrosesan real-time</li>
+                </ul>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const analyzeBtn = document.getElementById('analyze-btn');
+            const copyBtn = document.getElementById('copy-btn');
+            const newAnalysisBtn = document.getElementById('new-analysis-btn');
+            const form = document.getElementById('analysis-form');
+            const resultsSection = document.getElementById('results');
+            const errorMessage = document.getElementById('error-message');
+            const sentimentCard = document.getElementById('sentiment-card');
+            const sentimentIcon = document.getElementById('sentiment-icon');
+            const meterBar = document.getElementById('meter-bar');
+            
+            // Function to format confidence percentage
+            function formatConfidence(confidence) {
+                const percentage = Math.round(parseFloat(confidence));
+                return `${percentage}%`;
+            }
+            
+            // Function to set sentiment styling
+            function setSentimentStyle(sentiment) {
+                // Remove all sentiment classes
+                sentimentCard.classList.remove('positif', 'netral', 'negatif');
+                
+                // Add the appropriate class based on sentiment
+                const sentimentLower = sentiment.toLowerCase();
+                sentimentCard.classList.add(sentimentLower);
+                
+                // Set the appropriate icon
+                const icon = sentimentIcon.querySelector('i');
+                if (sentimentLower === 'positif') {
+                    icon.className = 'fas fa-smile';
+                } else if (sentimentLower === 'netral') {
+                    icon.className = 'fas fa-meh';
+                } else {
+                    icon.className = 'fas fa-frown';
+                }
+            }
+            
+            if (form) {
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    const text = document.getElementById('text-input').value;
+                    
+                    if (!text) {
+                        errorMessage.style.display = 'flex';
+                        document.getElementById('error-text').textContent = 'Masukkan teks terlebih dahulu!';
+                        return;
+                    }
+                    
+                    try {
+                        // Show loading state
+                        analyzeBtn.innerHTML = '<i class="fas fa-spinner loading"></i> Menganalisis...';
+                        analyzeBtn.disabled = true;
+                        errorMessage.style.display = 'none';
+                        
+                        // Start processing time measurement
+                        const startTime = new Date().getTime();
+                        
+                        const response = await fetch("/analyze", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/x-www-form-urlencoded",
+                            },
+                            body: new URLSearchParams({ text }),
+                        });
+                        
+                        const data = await response.json();
+                        
+                        // Calculate processing time
+                        const endTime = new Date().getTime();
+                        const processingTime = ((endTime - startTime) / 1000).toFixed(2);
+                        document.getElementById('processing-time').textContent = processingTime;
+                        
+                        if (data.error) {
+                            errorMessage.style.display = 'flex';
+                            document.getElementById('error-text').textContent = data.error;
+                            return;
+                        }
+                        
+                        // Display results
+                        document.getElementById('sentiment-text').textContent = data.sentiment;
+                        const confidenceFormatted = formatConfidence(data.confidence);
+                        document.getElementById('confidence-text').textContent = `(${confidenceFormatted})`;
+                        document.getElementById('ai-response-text').textContent = data.ai_response;
+                        
+                        // Set meter bar width based on confidence
+                        const confidencePercentage = Math.round(parseFloat(data.confidence));
+                        meterBar.style.width = `${confidencePercentage}%`;
+                        
+                        // Set sentiment styling
+                        setSentimentStyle(data.sentiment);
+                        
+                        // Show results
+                        resultsSection.style.display = 'block';
+                        
+                    } catch (error) {
+                        errorMessage.style.display = 'flex';
+                        document.getElementById('error-text').textContent = 'Terjadi kesalahan: ' + error.message;
+                    } finally {
+                        // Reset button state
+                        analyzeBtn.innerHTML = '<i class="fas fa-search"></i> Analisis Sentimen';
+                        analyzeBtn.disabled = false;
+                    }
+                });
+            }
+            
+            if (copyBtn) {
+                copyBtn.addEventListener('click', function() {
+                    const text = document.getElementById('text-input').value;
+                    const sentiment = document.getElementById('sentiment-text').textContent;
+                    const confidence = document.getElementById('confidence-text').textContent;
+                    const aiResponse = document.getElementById('ai-response-text').textContent;
+                    
+                    const resultText = `Teks: ${text}\n\nHasil Analisis: ${sentiment} ${confidence}\n\nPenjelasan AI:\n${aiResponse}`;
+                    
+                    navigator.clipboard.writeText(resultText).then(() => {
+                        const originalText = copyBtn.innerHTML;
+                        copyBtn.innerHTML = '<i class="fas fa-check"></i> Tersalin!';
+                        setTimeout(() => {
+                            copyBtn.innerHTML = originalText;
+                        }, 2000);
+                    });
+                });
+            }
+            
+            if (newAnalysisBtn) {
+                newAnalysisBtn.addEventListener('click', function() {
+                    document.getElementById('text-input').value = '';
+                    resultsSection.style.display = 'none';
+                    errorMessage.style.display = 'none';
+                });
+            }
+        });
+    </script>
+</body>
+</html>
