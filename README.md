@@ -1,6 +1,7 @@
 # Analisis Sentimen Bahasa Indonesia dengan IndoBERT dan Gemini AI
 
 ![Image](https://github.com/user-attachments/assets/b2a5984a-4d40-4211-95d5-7f58bf887268)
+## Student Development Initiative IBM X Hacktiv8
 
 ## 📝 Deskripsi Proyek
 
