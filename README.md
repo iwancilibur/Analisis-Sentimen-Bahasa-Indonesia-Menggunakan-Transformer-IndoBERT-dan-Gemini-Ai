@@ -168,9 +168,6 @@ Kontribusi terbuka! Berikut cara berkontribusi:
 4. Push ke branch (`git push origin fitur/namafitur`)
 5. Buat Pull Request
 
-## 📜 Lisensi
-
-Proyek ini dilisensikan di bawah Lisensi MIT - lihat file [LICENSE](LICENSE) untuk detailnya.
 
 ## ✉️ Kontak
 
